@@ -3,61 +3,98 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vice Cover Studio — GTA-Poster Cover Art Maker</title>
+<title>Vice Cover Studio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand"><span class="brand-mark">◆</span> VICE COVER STUDIO</div>
-  <div class="tagline">Your photos. Poster panels. Bold lettering. Export in seconds.</div>
-</header>
-<main class="layout">
-  <section class="stage-wrap">
-    <canvas id="stage" width="900" height="900"></canvas>
-    <p id="selectedLabel" class="hint">Panel 1 selected — drag to pan, scroll to zoom</p>
-    <p class="hint dim">Tip: click any panel to select it, then load a photo or drag &amp; drop an image onto it. Photos never leave your machine.</p>
-  </section>
-  <aside class="panel">
-    <h2>Layout</h2>
-    <div class="row">
-      <button data-layout="classic" class="chip active">Classic Poster</button>
-      <button data-layout="duo" class="chip">Duo Split</button>
-      <button data-layout="grid" class="chip">Grid Collage</button>
+<div id="appRoot" class="app-root">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">VC</span>
+      <div>
+        <h1>Vice Cover Studio</h1>
+        <p>Your photos. Poster panels. One bold cover.</p>
+      </div>
     </div>
-    <h2>Colour grade</h2>
-    <div class="row">
-      <button data-grade="sunset" class="chip active">Vice Sunset</button>
-      <button data-grade="neon" class="chip">Neon Nights</button>
-      <button data-grade="gold" class="chip">Golden Hour</button>
-      <button data-grade="none" class="chip">Clean</button>
+    <div class="top-actions">
+      <label class="size-label">Export size
+        <select id="sizeSelect">
+          <option value="1080x1080">1080 x 1080 — Square</option>
+          <option value="1080x1350">1080 x 1350 — Portrait</option>
+          <option value="1920x1080">1920 x 1080 — Wide</option>
+        </select>
+      </label>
+      <button id="exportBtn" class="export-btn" type="button">Export PNG</button>
     </div>
-    <h2>Photo</h2>
-    <div class="row">
-      <button data-sample="boulevard" class="chip">🌴 Boulevard</button>
-      <button data-sample="pier" class="chip">🎡 Neon Pier</button>
-      <button data-sample="harbor" class="chip">⛵ Harbour</button>
-    </div>
-    <button id="loadBtn" class="primary">Load photo into selected panel…</button>
-    <input type="file" id="fileInput" accept="image/*" hidden>
-    <label class="check"><input type="checkbox" id="onePhotoToggle"> One photo across all panels</label>
-    <label class="slider-label">Selected panel zoom <input type="range" id="zoomSlider" min="60" max="300" value="100"></label>
-    <h2>Caption</h2>
-    <input type="text" id="captionInput" value="Vice Heat" maxlength="28" placeholder="Type your caption">
-    <label class="slider-label">Caption size <input type="range" id="captionSize" min="55" max="150" value="100"></label>
-    <div class="row">
-      <button id="posTop" class="chip">Caption top</button>
-      <button id="posBottom" class="chip">Caption bottom</button>
-    </div>
-    <h2>Export PNG</h2>
-    <div class="row">
-      <button data-export="1080x1080" class="chip export">1080 × 1080</button>
-      <button data-export="1080x1350" class="chip export">1080 × 1350</button>
-      <button data-export="1920x1080" class="chip export">1920 × 1080</button>
-    </div>
-    <p class="steps"><strong>Fast &amp; easy:</strong> 1) Pick a layout · 2) Load your photos · 3) Type a caption · 4) Export. Three steps to a share-ready cover.</p>
-    <p class="fineprint">All artwork and lettering are original to Vice Cover Studio. No uploads — everything runs locally, fully offline.</p>
-  </aside>
-</main>
+  </header>
+
+  <main class="workspace">
+    <section class="preview-pane">
+      <div class="canvas-wrap">
+        <canvas id="previewCanvas" width="1080" height="1080"></canvas>
+      </div>
+      <p class="hint">Click a panel in the preview to select it, then use the sliders to crop and position its photo.</p>
+      <div id="panelTabs" class="panel-tabs"></div>
+    </section>
+
+    <aside class="controls">
+      <div class="control-group">
+        <h2>Photo</h2>
+        <label class="file-label">Load your photo
+          <input id="photoInput" type="file" accept="image/*">
+        </label>
+        <div class="sample-row">
+          <span>Try a sample:</span>
+          <button type="button" class="sample-btn" data-sample="boulevard">Boulevard</button>
+          <button type="button" class="sample-btn" data-sample="pier">Pier</button>
+          <button type="button" class="sample-btn" data-sample="harbor">Harbor</button>
+        </div>
+        <button id="fillAllBtn" type="button" class="secondary-btn">Fill all panels with current photo</button>
+      </div>
+
+      <div class="control-group">
+        <h2>Layout &amp; grade</h2>
+        <label>Layout
+          <select id="layoutSelect">
+            <option value="classic">Classic — big panel + two small</option>
+            <option value="duo">Duo — two tall panels</option>
+            <option value="grid">Grid — 2 x 2 panels</option>
+          </select>
+        </label>
+        <label>Colour grade
+          <select id="gradeSelect">
+            <option value="sunset">Sunset</option>
+            <option value="neon">Neon</option>
+            <option value="gold">Golden hour</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <h2>Caption</h2>
+        <label>Caption text
+          <input id="captionInput" type="text" value="Vice Heat" maxlength="28" placeholder="Type your caption">
+        </label>
+      </div>
+
+      <div class="control-group">
+        <h2>Selected panel crop</h2>
+        <label>Scale <span id="scaleVal">1.00</span>
+          <input id="scaleSlider" type="range" min="1" max="3" step="0.01" value="1">
+        </label>
+        <label>Move left / right <span id="offsetXVal">0</span>
+          <input id="offsetXSlider" type="range" min="-100" max="100" step="1" value="0">
+        </label>
+        <label>Move up / down <span id="offsetYVal">0</span>
+          <input id="offsetYSlider" type="range" min="-100" max="100" step="1" value="0">
+        </label>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="shotStage" class="shot-stage" hidden>
+  <canvas id="shotCanvas"></canvas>
+</div>
 <script type="module" src="src/main.js"></script>
 </body>
 </html>

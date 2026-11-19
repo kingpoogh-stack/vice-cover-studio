@@ -1,14 +1,18 @@
-// Shot mode: ?shot=cover / ?shot=editor
-export function parseShot() {
-  const p = new URLSearchParams(location.search);
+// Reading the ?shot=... parameters that capture.js uses for screenshots.
+
+export function parseShot(searchText) {
+  const params = new URLSearchParams(searchText ?? window.location.search);
+  const mode = params.get('shot');
+  if (!mode) return null;
   return {
-    mode: p.get('shot'),
-    layout: p.get('layout'),
-    photo: p.get('photo'),
-    caption: p.get('caption'),
-    grade: p.get('grade'),
+    mode,
+    layout: params.get('layout') || 'classic',
+    photo: params.get('photo') || 'boulevard',
+    caption: params.get('caption') || 'Vice Heat',
+    grade: params.get('grade') || 'sunset',
   };
 }
+
 export function isShotMode() {
-  return new URLSearchParams(location.search).has('shot');
+  return new URLSearchParams(window.location.search).has('shot');
 }
