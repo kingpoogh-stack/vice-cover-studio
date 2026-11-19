@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vice Cover Studio — GTA-Poster Cover Art Maker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">◆</span> VICE COVER STUDIO</div>
+  <div class="tagline">Your photos. Poster panels. Bold lettering. Export in seconds.</div>
+</header>
+<main class="layout">
+  <section class="stage-wrap">
+    <canvas id="stage" width="900" height="900"></canvas>
+    <p id="selectedLabel" class="hint">Panel 1 selected — drag to pan, scroll to zoom</p>
+    <p class="hint dim">Tip: click any panel to select it, then load a photo or drag &amp; drop an image onto it. Photos never leave your machine.</p>
+  </section>
+  <aside class="panel">
+    <h2>Layout</h2>
+    <div class="row">
+      <button data-layout="classic" class="chip active">Classic Poster</button>
+      <button data-layout="duo" class="chip">Duo Split</button>
+      <button data-layout="grid" class="chip">Grid Collage</button>
+    </div>
+    <h2>Colour grade</h2>
+    <div class="row">
+      <button data-grade="sunset" class="chip active">Vice Sunset</button>
+      <button data-grade="neon" class="chip">Neon Nights</button>
+      <button data-grade="gold" class="chip">Golden Hour</button>
+      <button data-grade="none" class="chip">Clean</button>
+    </div>
+    <h2>Photo</h2>
+    <div class="row">
+      <button data-sample="boulevard" class="chip">🌴 Boulevard</button>
+      <button data-sample="pier" class="chip">🎡 Neon Pier</button>
+      <button data-sample="harbor" class="chip">⛵ Harbour</button>
+    </div>
+    <button id="loadBtn" class="primary">Load photo into selected panel…</button>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+    <label class="check"><input type="checkbox" id="onePhotoToggle"> One photo across all panels</label>
+    <label class="slider-label">Selected panel zoom <input type="range" id="zoomSlider" min="60" max="300" value="100"></label>
+    <h2>Caption</h2>
+    <input type="text" id="captionInput" value="Vice Heat" maxlength="28" placeholder="Type your caption">
+    <label class="slider-label">Caption size <input type="range" id="captionSize" min="55" max="150" value="100"></label>
+    <div class="row">
+      <button id="posTop" class="chip">Caption top</button>
+      <button id="posBottom" class="chip">Caption bottom</button>
+    </div>
+    <h2>Export PNG</h2>
+    <div class="row">
+      <button data-export="1080x1080" class="chip export">1080 × 1080</button>
+      <button data-export="1080x1350" class="chip export">1080 × 1350</button>
+      <button data-export="1920x1080" class="chip export">1920 × 1080</button>
+    </div>
+    <p class="steps"><strong>Fast &amp; easy:</strong> 1) Pick a layout · 2) Load your photos · 3) Type a caption · 4) Export. Three steps to a share-ready cover.</p>
+    <p class="fineprint">All artwork and lettering are original to Vice Cover Studio. No uploads — everything runs locally, fully offline.</p>
+  </aside>
+</main>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
