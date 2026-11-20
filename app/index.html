@@ -7,94 +7,107 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="appRoot" class="app-root">
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">VC</span>
-      <div>
-        <h1>Vice Cover Studio</h1>
-        <p>Your photos. Poster panels. One bold cover.</p>
-      </div>
-    </div>
-    <div class="top-actions">
-      <label class="size-label">Export size
-        <select id="sizeSelect">
-          <option value="1080x1080">1080 x 1080 — Square</option>
-          <option value="1080x1350">1080 x 1350 — Portrait</option>
-          <option value="1920x1080">1920 x 1080 — Wide</option>
-        </select>
-      </label>
-      <button id="exportBtn" class="export-btn" type="button">Export PNG</button>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">VC</span>
+    <span class="brand-text">
+      <span class="brand-name">Vice Cover Studio</span>
+      <span class="brand-sub">Multi-panel poster covers from your own photos</span>
+    </span>
+  </div>
+  <div class="topbar-actions">
+    <label class="size-label" for="size-select">Export size</label>
+    <select id="size-select">
+      <option value="1080x1080" selected>1080 × 1080 — Square</option>
+      <option value="1080x1350">1080 × 1350 — Portrait</option>
+      <option value="1920x1080">1920 × 1080 — Wide</option>
+    </select>
+    <button id="export-btn" type="button" class="primary">Export PNG</button>
+  </div>
+</header>
 
-  <main class="workspace">
-    <section class="preview-pane">
-      <div class="canvas-wrap">
-        <canvas id="previewCanvas" width="1080" height="1080"></canvas>
-      </div>
-      <p class="hint">Click a panel in the preview to select it, then use the sliders to crop and position its photo.</p>
-      <div id="panelTabs" class="panel-tabs"></div>
-    </section>
+<div class="layout">
+  <main class="preview-pane">
+    <div class="canvas-wrap">
+      <canvas id="preview" width="1080" height="1080"></canvas>
+    </div>
+    <p class="hint">Tip: click a panel in the preview to select it, then use the crop sliders to frame your photo. Fill several panels with one photo, or give every panel its own shot.</p>
+    <div id="panel-tabs" class="panel-tabs" role="tablist" aria-label="Panels"></div>
+  </main>
 
-    <aside class="controls">
-      <div class="control-group">
-        <h2>Photo</h2>
-        <label class="file-label">Load your photo
-          <input id="photoInput" type="file" accept="image/*">
-        </label>
-        <div class="sample-row">
-          <span>Try a sample:</span>
+  <aside class="controls">
+    <section class="control-section">
+      <h2>Photo</h2>
+      <label class="file-label" for="photo-input">Use your own photo</label>
+      <input id="photo-input" type="file" accept="image/*">
+      <p class="small">Photos are processed locally in your browser only — nothing is uploaded.</p>
+      <div class="sample-row">
+        <span class="small strong">Or try a built-in scene:</span>
+        <div class="sample-buttons">
           <button type="button" class="sample-btn" data-sample="boulevard">Boulevard</button>
           <button type="button" class="sample-btn" data-sample="pier">Pier</button>
           <button type="button" class="sample-btn" data-sample="harbor">Harbor</button>
         </div>
-        <button id="fillAllBtn" type="button" class="secondary-btn">Fill all panels with current photo</button>
       </div>
+      <button id="fill-all" type="button" class="wide">Fill all panels with this photo</button>
+    </section>
 
-      <div class="control-group">
-        <h2>Layout &amp; grade</h2>
-        <label>Layout
-          <select id="layoutSelect">
-            <option value="classic">Classic — big panel + two small</option>
-            <option value="duo">Duo — two tall panels</option>
-            <option value="grid">Grid — 2 x 2 panels</option>
-          </select>
-        </label>
-        <label>Colour grade
-          <select id="gradeSelect">
-            <option value="sunset">Sunset</option>
-            <option value="neon">Neon</option>
-            <option value="gold">Golden hour</option>
-          </select>
-        </label>
-      </div>
+    <section class="control-section">
+      <h2>Layout &amp; grade</h2>
+      <label class="field-label" for="layout-select">Layout</label>
+      <select id="layout-select">
+        <option value="classic" selected>Classic — hero + two panels</option>
+        <option value="duo">Duo — two tall panels</option>
+        <option value="grid">Grid — four panels</option>
+      </select>
+      <label class="field-label" for="grade-select">Colour grade</label>
+      <select id="grade-select">
+        <option value="sunset" selected>Sunset</option>
+        <option value="neon">Neon night</option>
+        <option value="gold">Golden hour</option>
+      </select>
+    </section>
 
-      <div class="control-group">
-        <h2>Caption</h2>
-        <label>Caption text
-          <input id="captionInput" type="text" value="Vice Heat" maxlength="28" placeholder="Type your caption">
-        </label>
-      </div>
+    <section class="control-section">
+      <h2>Caption</h2>
+      <label class="field-label" for="caption-input">Cover caption</label>
+      <input id="caption-input" type="text" maxlength="28" value="Vice Heat" autocomplete="off">
+      <p class="small">Bold poster lettering is drawn across the lower third of the cover.</p>
+    </section>
 
-      <div class="control-group">
-        <h2>Selected panel crop</h2>
-        <label>Scale <span id="scaleVal">1.00</span>
-          <input id="scaleSlider" type="range" min="1" max="3" step="0.01" value="1">
-        </label>
-        <label>Move left / right <span id="offsetXVal">0</span>
-          <input id="offsetXSlider" type="range" min="-100" max="100" step="1" value="0">
-        </label>
-        <label>Move up / down <span id="offsetYVal">0</span>
-          <input id="offsetYSlider" type="range" min="-100" max="100" step="1" value="0">
-        </label>
+    <section class="control-section">
+      <h2>Selected panel crop</h2>
+      <div class="range-row">
+        <label for="scale-range">Zoom</label>
+        <input id="scale-range" type="range" min="100" max="300" value="100" step="1">
+        <span id="scale-value" class="range-value">100%</span>
       </div>
-    </aside>
-  </main>
+      <div class="range-row">
+        <label for="offsetx-range">Pan X</label>
+        <input id="offsetx-range" type="range" min="-100" max="100" value="0" step="1">
+        <span id="offsetx-value" class="range-value">0</span>
+      </div>
+      <div class="range-row">
+        <label for="offsety-range">Pan Y</label>
+        <input id="offsety-range" type="range" min="-100" max="100" value="0" step="1">
+        <span id="offsety-value" class="range-value">0</span>
+      </div>
+      <p class="small">Crop controls apply to the selected panel only, so each photo can be framed independently.</p>
+    </section>
+
+    <section class="control-section steps">
+      <h2>Three steps to a cover</h2>
+      <ol>
+        <li>Add a photo (yours, or a built-in scene).</li>
+        <li>Pick a layout, grade and caption, frame each panel.</li>
+        <li>Hit Export PNG at 1080×1080, 1080×1350 or 1920×1080.</li>
+      </ol>
+    </section>
+  </aside>
 </div>
-<div id="shotStage" class="shot-stage" hidden>
-  <canvas id="shotCanvas"></canvas>
-</div>
+
+<div id="shotStage" hidden><canvas id="shotCanvas"></canvas></div>
+
 <script type="module" src="src/main.js"></script>
 </body>
 </html>

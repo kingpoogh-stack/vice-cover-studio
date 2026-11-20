@@ -4,16 +4,14 @@
 [![rank](https://make.fun/badge/gta6-cover-art-01/kingpoogh-stack/vice-cover-studio/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 [![reward](https://make.fun/badge/gta6-cover-art-01/kingpoogh-stack/vice-cover-studio/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
-Vice Cover Studio turns your own photos into a bold multi-panel poster cover. Drop a photo in, spread it across angled poster panels with white borders, or give each panel a different shot, then crop and position every panel with simple scale and offset sliders. Add a big caption in heavy poster lettering, pick a sunset, neon or golden colour grade, preview everything live, and export a finished PNG at 1080x1080, 1080x1350 or 1920x1080. Three built-in sample scenes — a sunset boulevard, a neon pier and a golden-hour harbour, all rendered in 3D for this project — let you try the studio instantly with no photo of your own. Your photos are read locally in the browser and never leave the machine; there is no upload, no account and no build step.
+Vice Cover Studio turns your own photos into bold, multi-panel poster covers. Drop in a photo, spread it across several tilted panels — or give every panel its own shot — then frame each panel independently with per-panel zoom and pan sliders, edit the caption text, and finish the artwork with heavy poster lettering and a sunset, neon or gold colour grade. Three layouts (Classic hero, Duo and Grid) and one-click PNG export at 1080x1080, 1080x1350 and 1920x1080 make it fast: open the app, add a photo, export. Three built-in sample scenes (Boulevard, Pier and Harbor), rendered in 3D for this project, are included so you can try the studio instantly. Your photos are processed locally in the browser only — nothing is ever uploaded. All artwork, lettering and sample scenes are original work; the caption typeface is Anton, used under the SIL Open Font License 1.1 (see app/fonts/OFL.txt).
 
 ## Run it
 
-```sh
+```
 node serve.ts
 ```
 
-Then open http://localhost:8080 in desktop Chrome. Choose a sample or load your own photo, click a panel to select it, adjust its crop, type a caption, and press Export PNG.
-
----
+Then open http://localhost:8080 in a desktop browser. No build step and no network access are needed — the app in `app/` is fully static and works offline.
 
 Built for [make.fun](https://make.fun/?ref=309n18ww) — https://make.fun/?ref=309n18ww
