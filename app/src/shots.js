@@ -1,5 +1,3 @@
-// Shot-mode helpers for Vice Cover Studio.
-
 export const SHOT_SIZES = {
   '1080x1080': { w: 1080, h: 1080 },
   '1080x1350': { w: 1080, h: 1350 },
@@ -8,16 +6,18 @@ export const SHOT_SIZES = {
 
 export function parseShotParams(search) {
   const params = new URLSearchParams(search || '');
-  const w = parseInt(params.get('w') || '', 10);
-  const h = parseInt(params.get('h') || '', 10);
+  const parsePos = (key, fallback) => {
+    const v = parseInt(params.get(key) || '', 10);
+    return Number.isFinite(v) && v > 0 ? v : fallback;
+  };
   return {
     shot: params.get('shot') || null,
     layout: params.get('layout') || 'classic',
     photo: params.get('photo') || 'boulevard',
     caption: params.get('caption') || 'Vice Heat',
     grade: params.get('grade') || 'sunset',
-    w: Number.isFinite(w) && w > 0 ? w : 1280,
-    h: Number.isFinite(h) && h > 0 ? h : 720,
+    w: parsePos('w', 1280),
+    h: parsePos('h', 720),
   };
 }
 

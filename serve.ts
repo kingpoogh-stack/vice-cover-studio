@@ -1,11 +1,11 @@
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync } from 'node:fs';
-import { dirname, join, extname, normalize } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const appDir = join(root, 'app');
-const port = 8080;
+const PORT = 8080;
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -19,28 +19,37 @@ const MIME: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
+function extOf(p: string): string {
+  const i = p.lastIndexOf('.');
+  return i >= 0 ? p.slice(i).toLowerCase() : '';
+}
+
 const server = createServer((req, res) => {
   try {
-    const url = new URL(req.url || '/', 'http://localhost');
+    const url = new URL(req.url || '/', `http://localhost:${PORT}`);
     let pathname = decodeURIComponent(url.pathname);
     if (pathname === '/') pathname = '/index.html';
-    const safe = normalize(pathname).replace(/^([/\\])+/, '');
-    const filePath = join(appDir, safe);
+    const rel = normalize(pathname).replace(/^[/\\]+/, '');
+    const filePath = join(appDir, rel);
     if (!filePath.startsWith(appDir) || !existsSync(filePath) || !statSync(filePath).isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Not found');
       return;
     }
     const data = readFileSync(filePath);
-    const type = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': type, 'Content-Length': data.length, 'Cache-Control': 'no-store' });
+    const type = MIME[extOf(filePath)] || 'application/octet-stream';
+    res.writeHead(200, {
+      'Content-Type': type,
+      'Content-Length': String(data.length),
+      'Cache-Control': 'no-store',
+    });
     res.end(data);
-  } catch (err) {
+  } catch {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Server error');
   }
 });
 
-server.listen(port, () => {
-  console.log('Vice Cover Studio dev server at http://localhost:' + port + '/');
+server.listen(PORT, () => {
+  console.log('Vice Cover Studio dev server at http://localhost:8080/');
 });

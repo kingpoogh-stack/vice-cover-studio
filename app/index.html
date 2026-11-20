@@ -22,10 +22,9 @@
       <option value="1080x1350">1080 × 1350 — Portrait</option>
       <option value="1920x1080">1920 × 1080 — Wide</option>
     </select>
-    <button id="export-btn" type="button" class="primary">Export PNG</button>
+    <button id="export-btn" class="primary" type="button">Export PNG</button>
   </div>
 </header>
-
 <div class="layout">
   <main class="preview-pane">
     <div class="canvas-wrap">
@@ -34,7 +33,6 @@
     <p class="hint">Tip: click a panel in the preview to select it, then use the crop sliders to frame your photo. Fill several panels with one photo, or give every panel its own shot.</p>
     <div id="panel-tabs" class="panel-tabs" role="tablist" aria-label="Panels"></div>
   </main>
-
   <aside class="controls">
     <section class="control-section">
       <h2>Photo</h2>
@@ -44,14 +42,13 @@
       <div class="sample-row">
         <span class="small strong">Or try a built-in scene:</span>
         <div class="sample-buttons">
-          <button type="button" class="sample-btn" data-sample="boulevard">Boulevard</button>
-          <button type="button" class="sample-btn" data-sample="pier">Pier</button>
-          <button type="button" class="sample-btn" data-sample="harbor">Harbor</button>
+          <button class="sample-btn" type="button" data-sample="boulevard">Boulevard</button>
+          <button class="sample-btn" type="button" data-sample="pier">Pier</button>
+          <button class="sample-btn" type="button" data-sample="harbor">Harbor</button>
         </div>
       </div>
-      <button id="fill-all" type="button" class="wide">Fill all panels with this photo</button>
+      <button id="fill-all" class="wide" type="button">Fill all panels with this photo</button>
     </section>
-
     <section class="control-section">
       <h2>Layout &amp; grade</h2>
       <label class="field-label" for="layout-select">Layout</label>
@@ -67,34 +64,31 @@
         <option value="gold">Golden hour</option>
       </select>
     </section>
-
     <section class="control-section">
       <h2>Caption</h2>
       <label class="field-label" for="caption-input">Cover caption</label>
       <input id="caption-input" type="text" maxlength="28" value="Vice Heat" autocomplete="off">
       <p class="small">Bold poster lettering is drawn across the lower third of the cover.</p>
     </section>
-
     <section class="control-section">
       <h2>Selected panel crop</h2>
       <div class="range-row">
         <label for="scale-range">Zoom</label>
-        <input id="scale-range" type="range" min="100" max="300" value="100" step="1">
+        <input id="scale-range" type="range" min="100" max="300" step="1" value="100">
         <span id="scale-value" class="range-value">100%</span>
       </div>
       <div class="range-row">
         <label for="offsetx-range">Pan X</label>
-        <input id="offsetx-range" type="range" min="-100" max="100" value="0" step="1">
+        <input id="offsetx-range" type="range" min="-100" max="100" step="1" value="0">
         <span id="offsetx-value" class="range-value">0</span>
       </div>
       <div class="range-row">
         <label for="offsety-range">Pan Y</label>
-        <input id="offsety-range" type="range" min="-100" max="100" value="0" step="1">
+        <input id="offsety-range" type="range" min="-100" max="100" step="1" value="0">
         <span id="offsety-value" class="range-value">0</span>
       </div>
       <p class="small">Crop controls apply to the selected panel only, so each photo can be framed independently.</p>
     </section>
-
     <section class="control-section steps">
       <h2>Three steps to a cover</h2>
       <ol>
@@ -105,9 +99,9 @@
     </section>
   </aside>
 </div>
-
-<div id="shotStage" hidden><canvas id="shotCanvas"></canvas></div>
-
+<div id="shotStage" hidden>
+  <canvas id="shotCanvas"></canvas>
+</div>
 <script type="module" src="src/main.js"></script>
 </body>
 </html>

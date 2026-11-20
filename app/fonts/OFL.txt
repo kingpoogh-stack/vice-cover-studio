@@ -1,4 +1,4 @@
-Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/AntonFont)
+Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/Anton-OFL)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
@@ -43,7 +43,7 @@ new environment.
 "Author" refers to any designer, engineer, programmer, technical
 writer or other person who contributed to the Font Software.
 
-PERMISSION & CONDITION
+PERMISSION & CONDITIONS
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of the Font Software, to use, study, copy, merge, embed, modify,
 redistribute, and sell modified and unmodified copies of the Font
@@ -74,7 +74,7 @@ permission.
 must be distributed entirely under this license, and must not be
 distributed under any other license. The requirement for fonts to
 remain under this license does not apply to any document created
-using the fonts or their derivatives.
+using the Font Software.
 
 TERMINATION
 This license becomes null and void if any of the above conditions are

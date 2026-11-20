@@ -3,12 +3,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const repoRoot = dirname(fileURLToPath(import.meta.url));
 const outputDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
 
 mkdirSync(outputDir, { recursive: true });
-cpSync(join(root, 'app'), join(outputDir, 'app'), { recursive: true, force: true });
-cpSync(join(root, 'screenshots'), join(outputDir, 'screenshots'), { recursive: true, force: true });
+
+cpSync(join(repoRoot, 'app'), join(outputDir, 'app'), { recursive: true, force: true });
+cpSync(join(repoRoot, 'screenshots'), join(outputDir, 'screenshots'), { recursive: true, force: true });
 
 const dossier = buildDossier(outputDir, {
   text_max_bytes: 163840,
@@ -18,5 +19,6 @@ const dossier = buildDossier(outputDir, {
   app_path_max_bytes: 1000,
 });
 
-writeFileSync(join(outputDir, 'dossier.json'), dossier);
-console.log('Wrote dossier.json (' + dossier.length + ' bytes) to ' + outputDir);
+const dest = join(outputDir, 'dossier.json');
+writeFileSync(dest, dossier);
+console.log(`Wrote dossier (${Buffer.byteLength(dossier, 'utf8')} bytes) to ${dest}`);
