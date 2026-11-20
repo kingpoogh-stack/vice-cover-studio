@@ -1,4 +1,4 @@
-const GRADES = {
+export const GRADES = {
   sunset: {
     bg: ['#2b1055', '#8f2d7a', '#1c0b2e'],
     glow: 'rgba(255,138,76,0.55)',
@@ -23,143 +23,211 @@ const GRADES = {
 };
 
 export function getPanelRects(layout, w, h) {
-  const m = Math.min(w, h);
-  const pad = m * 0.035;
-  const gap = m * 0.022;
-  const iw = w - pad * 2;
-  const ih = h - pad * 2;
+  const minDim = Math.min(w, h);
+  const pad = 0.035 * minDim;
+  const gap = 0.022 * minDim;
+  const innerW = w - 2 * pad;
+  const innerH = h - 2 * pad;
   if (layout === 'duo') {
-    const pw = (iw - gap) / 2;
+    const pw = (innerW - gap) / 2;
     return [
-      { x: pad, y: pad, w: pw, h: ih, tilt: -0.012 },
-      { x: pad + pw + gap, y: pad, w: pw, h: ih, tilt: 0.012 },
+      { x: pad, y: pad, w: pw, h: innerH, tilt: -0.012 },
+      { x: pad + pw + gap, y: pad, w: pw, h: innerH, tilt: 0.012 },
     ];
   }
   if (layout === 'grid') {
-    const pw = (iw - gap) / 2;
-    const ph = (ih - gap) / 2;
+    const pw = (innerW - gap) / 2;
+    const ph = (innerH - gap) / 2;
     const tilts = [-0.01, 0.01, 0.01, -0.01];
     const rects = [];
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < 2; c++) {
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 2; col++) {
         rects.push({
-          x: pad + c * (pw + gap),
-          y: pad + r * (ph + gap),
+          x: pad + col * (pw + gap),
+          y: pad + row * (ph + gap),
           w: pw,
           h: ph,
-          tilt: tilts[r * 2 + c],
+          tilt: tilts[row * 2 + col],
         });
       }
     }
     return rects;
   }
-  const heroW = (iw - gap) * 0.62;
+  // classic
+  const heroW = 0.62 * (innerW - gap);
   const rightX = pad + heroW + gap;
-  const rightW = iw - gap - heroW;
-  const halfH = (ih - gap) / 2;
+  const rightW = innerW - gap - heroW;
+  const rightH = (innerH - gap) / 2;
   return [
-    { x: pad, y: pad, w: heroW, h: ih, tilt: -0.014 },
-    { x: rightX, y: pad, w: rightW, h: halfH, tilt: 0.018 },
-    { x: rightX, y: pad + halfH + gap, w: rightW, h: halfH, tilt: -0.018 },
+    { x: pad, y: pad, w: heroW, h: innerH, tilt: -0.014 },
+    { x: rightX, y: pad, w: rightW, h: rightH, tilt: 0.018 },
+    { x: rightX, y: pad + rightH + gap, w: rightW, h: rightH, tilt: -0.018 },
   ];
 }
 
-function drawBackground(ctx, grade, w, h) {
-  const g = ctx.createLinearGradient(0, 0, w * 0.25, h);
-  g.addColorStop(0, grade.bg[0]);
-  g.addColorStop(0.52, grade.bg[1]);
-  g.addColorStop(1, grade.bg[2]);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, w, h);
-  const rg = ctx.createRadialGradient(w * 0.72, h * 0.2, 0, w * 0.72, h * 0.2, Math.max(w, h) * 0.75);
-  rg.addColorStop(0, grade.glow);
-  rg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = rg;
-  ctx.fillRect(0, 0, w, h);
-}
-
-function drawEmptyPanel(ctx, grade, pw, ph) {
-  const g = ctx.createLinearGradient(-pw / 2, -ph / 2, pw / 2, ph / 2);
-  g.addColorStop(0, grade.empty[0]);
-  g.addColorStop(1, grade.empty[1]);
-  ctx.fillStyle = g;
-  ctx.fillRect(-pw / 2, -ph / 2, pw, ph);
-  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-  ctx.lineWidth = Math.max(6, pw * 0.045);
-  const step = Math.max(28, pw * 0.16);
+function drawPanelContent(ctx, rect, panelState, grade) {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rect.tilt || 0);
   ctx.beginPath();
-  for (let x = -pw; x < pw; x += step) {
-    ctx.moveTo(-pw / 2 + x, ph / 2);
-    ctx.lineTo(-pw / 2 + x + ph, -ph / 2);
+  ctx.rect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+  ctx.clip();
+  const img = panelState ? panelState.image : null;
+  const transform = panelState && panelState.transform ? panelState.transform : { scale: 100, offsetX: 0, offsetY: 0 };
+  if (img) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    if (iw && ih) {
+      const baseScale = Math.max(rect.w / iw, rect.h / ih);
+      const scale = baseScale * ((transform.scale || 100) / 100);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      const overflowX = Math.max(0, dw - rect.w);
+      const overflowY = Math.max(0, dh - rect.h);
+      const shiftX = ((transform.offsetX || 0) / 100) * 0.45 * overflowX;
+      const shiftY = ((transform.offsetY || 0) / 100) * 0.45 * overflowY;
+      ctx.drawImage(img, -dw / 2 + shiftX, -dh / 2 + shiftY, dw, dh);
+    }
+  } else {
+    const grad = ctx.createLinearGradient(-rect.w / 2, -rect.h / 2, rect.w / 2, rect.h / 2);
+    grad.addColorStop(0, grade.empty[0]);
+    grad.addColorStop(1, grade.empty[1]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = Math.max(6, 0.045 * rect.w);
+    const step = Math.max(28, 0.16 * rect.w);
+    ctx.beginPath();
+    for (let x = -rect.w; x < rect.w * 2; x += step) {
+      ctx.moveTo(-rect.w / 2 + x, -rect.h / 2);
+      ctx.lineTo(-rect.w / 2 + x - rect.h, rect.h / 2);
+    }
+    ctx.stroke();
+    ctx.restore();
   }
-  ctx.stroke();
+  const overlayGrad = ctx.createLinearGradient(0, -rect.h / 2, 0, rect.h / 2);
+  overlayGrad.addColorStop(0, grade.overlay[0]);
+  overlayGrad.addColorStop(1, grade.overlay[1]);
+  ctx.fillStyle = overlayGrad;
+  ctx.fillRect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+  ctx.restore();
 }
 
-function drawPanelImage(ctx, img, t, pw, ph) {
-  const iw = img.naturalWidth || img.width || 0;
-  const ih = img.naturalHeight || img.height || 0;
-  if (!iw || !ih) return;
-  const scale = ((t && t.scale) || 100) / 100;
-  const base = Math.max(pw / iw, ph / ih);
-  const dw = iw * base * scale;
-  const dh = ih * base * scale;
-  const ox = Math.max(0, dw - pw);
-  const oy = Math.max(0, dh - ph);
-  const shiftX = (((t && t.offsetX) || 0) / 100) * 0.45 * ox;
-  const shiftY = (((t && t.offsetY) || 0) / 100) * 0.45 * oy;
-  ctx.drawImage(img, -dw / 2 + shiftX, -dh / 2 + shiftY, dw, dh);
+function normalizePanels(state, rects) {
+  return rects.map((_, i) => ({
+    image: state.images ? state.images[i] : null,
+    transform: state.transforms ? state.transforms[i] : undefined,
+  }));
 }
 
-function drawGradeOverlay(ctx, grade, pw, ph) {
-  const g = ctx.createLinearGradient(0, -ph / 2, 0, ph / 2);
-  g.addColorStop(0, grade.overlay[0]);
-  g.addColorStop(1, grade.overlay[1]);
-  ctx.fillStyle = g;
-  ctx.fillRect(-pw / 2, -ph / 2, pw, ph);
+export function drawCover(ctx, state, w, h) {
+  const grade = GRADES[state.grade] || GRADES.sunset;
+  const rects = getPanelRects(state.layout, w, h);
+  const panels = normalizePanels(state, rects);
+
+  // (i) background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0.25 * w, h);
+  bgGrad.addColorStop(0, grade.bg[0]);
+  bgGrad.addColorStop(0.52, grade.bg[1]);
+  bgGrad.addColorStop(1, grade.bg[2]);
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+  const glowGrad = ctx.createRadialGradient(0.72 * w, 0.20 * h, 0, 0.72 * w, 0.20 * h, 0.75 * Math.max(w, h));
+  glowGrad.addColorStop(0, grade.glow);
+  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // (ii) panels
+  rects.forEach((rect, i) => drawPanelContent(ctx, rect, panels[i], grade));
+
+  // (iii) borders pass
+  const borderW = Math.max(6, 0.011 * Math.min(w, h));
+  rects.forEach((rect, i) => {
+    const cx = rect.x + rect.w / 2;
+    const cy = rect.y + rect.h / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rect.tilt || 0);
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 1.6 * borderW;
+    ctx.shadowOffsetY = 0.5 * borderW;
+    ctx.shadowOffsetX = 0;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = borderW;
+    ctx.strokeRect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
+    ctx.shadowColor = 'rgba(0,0,0,0)';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = grade.accent;
+    ctx.lineWidth = Math.max(2, 0.35 * borderW);
+    ctx.strokeRect(-rect.w / 2 + borderW, -rect.h / 2 + borderW, rect.w - 2 * borderW, rect.h - 2 * borderW);
+    ctx.restore();
+    ctx.restore();
+    if (state.showSelection && state.selectedPanel === i) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rect.tilt || 0);
+      ctx.strokeStyle = grade.accent;
+      ctx.lineWidth = 0.55 * borderW;
+      const expand = borderW;
+      ctx.strokeRect(-rect.w / 2 - expand, -rect.h / 2 - expand, rect.w + 2 * expand, rect.h + 2 * expand);
+      ctx.restore();
+    }
+  });
+
+  // (iv) vignette
+  const vig = ctx.createRadialGradient(w / 2, h / 2, 0.42 * Math.min(w, h), w / 2, h / 2, 0.78 * Math.max(w, h));
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.34)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, w, h);
+
+  // (v) caption
+  drawCaption(ctx, state, w, h, grade);
 }
 
-function drawCaption(ctx, state, w, h) {
+function drawCaption(ctx, state, w, h, grade) {
   const raw = (state.caption || '').trim();
   if (!raw) return;
-  const grade = GRADES[state.grade] || GRADES.sunset;
   const text = raw.toUpperCase();
-  const m = Math.min(w, h);
-  let size = m * 0.115;
+  let size = 0.115 * Math.min(w, h);
+  const setFont = () => {
+    ctx.font = `${size}px Anton, Impact, sans-serif`;
+    try { ctx.letterSpacing = `${Math.round(0.03 * size)}px`; } catch {}
+  };
+  ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `${size}px Anton, Impact, sans-serif`;
-  try {
-    ctx.letterSpacing = `${Math.max(1, size * 0.03)}px`;
-  } catch {
-    // letterSpacing is not supported everywhere; ignore.
-  }
+  setFont();
   let measured = ctx.measureText(text).width;
-  const maxW = w * 0.9;
-  if (measured > maxW) {
+  const maxW = 0.9 * w;
+  if (measured > maxW && measured > 0) {
     size = Math.max(18, size * (maxW / measured));
-    ctx.font = `${size}px Anton, Impact, sans-serif`;
-    try {
-      ctx.letterSpacing = `${Math.max(1, size * 0.03)}px`;
-    } catch {
-      // ignore
-    }
+    setFont();
     measured = ctx.measureText(text).width;
   }
-  const cy = h * 0.8;
-  const bandH = size * 1.55;
-  const band = ctx.createLinearGradient(0, cy - bandH / 2, 0, cy + bandH / 2);
-  band.addColorStop(0, 'rgba(8,2,18,0)');
-  band.addColorStop(0.5, 'rgba(8,2,18,0.55)');
-  band.addColorStop(1, 'rgba(8,2,18,0)');
-  ctx.fillStyle = band;
+  const cy = 0.80 * h;
+  const bandH = 1.55 * size;
+  const bandGrad = ctx.createLinearGradient(0, cy - bandH / 2, 0, cy + bandH / 2);
+  bandGrad.addColorStop(0, 'rgba(8,2,18,0)');
+  bandGrad.addColorStop(0.5, 'rgba(8,2,18,0.55)');
+  bandGrad.addColorStop(1, 'rgba(8,2,18,0)');
+  ctx.fillStyle = bandGrad;
   ctx.fillRect(0, cy - bandH / 2, w, bandH);
 
   ctx.lineJoin = 'round';
-  ctx.shadowColor = 'rgba(0,0,0,0.65)';
-  ctx.shadowBlur = size * 0.16;
-  ctx.shadowOffsetY = size * 0.07;
-  ctx.lineWidth = Math.max(4, size * 0.16);
   ctx.strokeStyle = '#17082b';
+  ctx.lineWidth = Math.max(4, 0.16 * size);
+  ctx.shadowColor = 'rgba(0,0,0,0.65)';
+  ctx.shadowBlur = 0.16 * size;
+  ctx.shadowOffsetY = 0.07 * size;
+  ctx.shadowOffsetX = 0;
   ctx.strokeText(text, w / 2, cy);
   ctx.shadowColor = 'rgba(0,0,0,0)';
   ctx.shadowBlur = 0;
@@ -167,77 +235,12 @@ function drawCaption(ctx, state, w, h) {
   ctx.fillStyle = '#ffffff';
   ctx.fillText(text, w / 2, cy);
 
-  const uw = Math.min(measured, w * 0.9);
-  const uh = Math.max(3, size * 0.07);
+  const underlineW = Math.min(measured, maxW);
+  const underlineH = Math.max(3, 0.07 * size);
   ctx.fillStyle = grade.accent;
-  ctx.fillRect(w / 2 - uw / 2, cy + size * 0.62, uw, uh);
-}
-
-export function drawCover(ctx, state, w, h) {
-  const gradeKey = state.grade || 'sunset';
-  const grade = GRADES[gradeKey] || GRADES.sunset;
-  const layout = state.layout || 'classic';
-  drawBackground(ctx, grade, w, h);
-  const rects = getPanelRects(layout, w, h);
-  const borderW = Math.max(6, Math.min(w, h) * 0.011);
-  const images = state.images || [];
-  const transforms = state.transforms || [];
-
-  rects.forEach((rect, i) => {
-    ctx.save();
-    ctx.translate(rect.x + rect.w / 2, rect.y + rect.h / 2);
-    ctx.rotate(rect.tilt || 0);
-    ctx.beginPath();
-    ctx.rect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
-    ctx.clip();
-    const img = images[i];
-    if (img) {
-      drawPanelImage(ctx, img, transforms[i] || null, rect.w, rect.h);
-    } else {
-      drawEmptyPanel(ctx, grade, rect.w, rect.h);
-    }
-    drawGradeOverlay(ctx, grade, rect.w, rect.h);
-    ctx.restore();
-  });
-
-  rects.forEach((rect, i) => {
-    ctx.save();
-    ctx.translate(rect.x + rect.w / 2, rect.y + rect.h / 2);
-    ctx.rotate(rect.tilt || 0);
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = borderW * 1.6;
-    ctx.shadowOffsetY = borderW * 0.5;
-    ctx.lineWidth = borderW;
-    ctx.strokeStyle = '#ffffff';
-    ctx.strokeRect(-rect.w / 2, -rect.h / 2, rect.w, rect.h);
-    ctx.restore();
-
-    if (state.showSelection && state.selectedPanel === i) {
-      ctx.save();
-      ctx.translate(rect.x + rect.w / 2, rect.y + rect.h / 2);
-      ctx.rotate(rect.tilt || 0);
-      ctx.lineWidth = Math.max(3, borderW * 0.55);
-      ctx.strokeStyle = grade.accent;
-      ctx.strokeRect(
-        -rect.w / 2 - borderW,
-        -rect.h / 2 - borderW,
-        rect.w + borderW * 2,
-        rect.h + borderW * 2
-      );
-      ctx.restore();
-    }
-  });
-
-  const vignette = ctx.createRadialGradient(
-    w / 2, h / 2, Math.min(w, h) * 0.42,
-    w / 2, h / 2, Math.max(w, h) * 0.78
-  );
-  vignette.addColorStop(0, 'rgba(0,0,0,0)');
-  vignette.addColorStop(1, 'rgba(0,0,0,0.34)');
-  ctx.fillStyle = vignette;
-  ctx.fillRect(0, 0, w, h);
-
-  drawCaption(ctx, state, w, h);
+  ctx.fillRect(w / 2 - underlineW / 2, cy + 0.62 * size, underlineW, underlineH);
+  try { ctx.letterSpacing = '0px'; } catch {}
+  ctx.restore();
 }
 
 export function exportCoverPNG(state, w, h) {

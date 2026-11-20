@@ -18,20 +18,41 @@ const state = {
 
 const preview = document.getElementById('preview');
 const pctx = preview.getContext('2d');
-const tabsEl = document.getElementById('panel-tabs');
+const panelTabs = document.getElementById('panel-tabs');
+const photoInput = document.getElementById('photo-input');
+const fillAllBtn = document.getElementById('fill-all');
+const layoutSelect = document.getElementById('layout-select');
+const gradeSelect = document.getElementById('grade-select');
+const captionInput = document.getElementById('caption-input');
 const scaleRange = document.getElementById('scale-range');
 const offsetXRange = document.getElementById('offsetx-range');
 const offsetYRange = document.getElementById('offsety-range');
 const scaleValue = document.getElementById('scale-value');
 const offsetXValue = document.getElementById('offsetx-value');
 const offsetYValue = document.getElementById('offsety-value');
+const sizeSelect = document.getElementById('size-select');
+const exportBtn = document.getElementById('export-btn');
+
+function redraw() {
+  drawCover(pctx, state, preview.width, preview.height);
+}
 
 function panelCount() {
   return getPanelRects(state.layout, 1080, 1080).length;
 }
 
-function redraw() {
-  drawCover(pctx, state, preview.width, preview.height);
+function buildTabs() {
+  panelTabs.innerHTML = '';
+  const count = panelCount();
+  for (let i = 0; i < count; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = `Panel ${i + 1}`;
+    btn.setAttribute('role', 'tab');
+    if (i === state.selectedPanel) btn.classList.add('active-tab');
+    btn.addEventListener('click', () => selectPanel(i));
+    panelTabs.appendChild(btn);
+  }
 }
 
 function syncSliders() {
@@ -44,20 +65,6 @@ function syncSliders() {
   offsetYValue.textContent = String(t.offsetY);
 }
 
-function buildTabs() {
-  tabsEl.innerHTML = '';
-  const count = panelCount();
-  for (let i = 0; i < count; i++) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = `Panel ${i + 1}`;
-    btn.setAttribute('role', 'tab');
-    if (i === state.selectedPanel) btn.classList.add('active-tab');
-    btn.addEventListener('click', () => selectPanel(i));
-    tabsEl.appendChild(btn);
-  }
-}
-
 function selectPanel(i) {
   state.selectedPanel = i;
   buildTabs();
@@ -65,19 +72,16 @@ function selectPanel(i) {
   redraw();
 }
 
-function setImage(img, panelIndex) {
-  state.images[panelIndex] = img;
-  state.currentImage = panelIndex;
+function setImage(img, i) {
+  state.images[i] = img;
+  state.currentImage = i;
   redraw();
 }
 
-function loadSample(name, panelIndex) {
+function loadSample(name, index) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => {
-      setImage(img, panelIndex);
-      resolve(img);
-    };
+    img.onload = () => { setImage(img, index); resolve(img); };
     img.onerror = () => resolve(null);
     img.src = `samples/${name}.jpg`;
   });
@@ -92,7 +96,6 @@ function loadSampleImageOnly(name) {
   });
 }
 
-const photoInput = document.getElementById('photo-input');
 photoInput.addEventListener('change', () => {
   const file = photoInput.files && photoInput.files[0];
   if (!file) return;
@@ -107,12 +110,11 @@ photoInput.addEventListener('change', () => {
 
 document.querySelectorAll('.sample-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const name = btn.getAttribute('data-sample');
-    if (name) loadSample(name, state.selectedPanel);
+    loadSample(btn.getAttribute('data-sample'), state.selectedPanel);
   });
 });
 
-document.getElementById('fill-all').addEventListener('click', () => {
+fillAllBtn.addEventListener('click', () => {
   let img = state.currentImage >= 0 ? state.images[state.currentImage] : null;
   if (!img) img = state.images.find((x) => x) || null;
   if (!img) return;
@@ -120,23 +122,20 @@ document.getElementById('fill-all').addEventListener('click', () => {
   redraw();
 });
 
-const layoutSelect = document.getElementById('layout-select');
 layoutSelect.addEventListener('change', () => {
   state.layout = layoutSelect.value;
   const count = panelCount();
-  if (state.selectedPanel >= count) state.selectedPanel = count - 1;
+  if (state.selectedPanel > count - 1) state.selectedPanel = count - 1;
   buildTabs();
   syncSliders();
   redraw();
 });
 
-const gradeSelect = document.getElementById('grade-select');
 gradeSelect.addEventListener('change', () => {
   state.grade = gradeSelect.value;
   redraw();
 });
 
-const captionInput = document.getElementById('caption-input');
 captionInput.addEventListener('input', () => {
   state.caption = captionInput.value;
   redraw();
@@ -145,13 +144,11 @@ captionInput.addEventListener('input', () => {
 function bindSlider(range, valueEl, key, format) {
   range.addEventListener('input', () => {
     const v = parseInt(range.value, 10) || 0;
-    const t = state.transforms[state.selectedPanel];
-    if (t) t[key] = v;
+    state.transforms[state.selectedPanel][key] = v;
     valueEl.textContent = format(v);
     redraw();
   });
 }
-
 bindSlider(scaleRange, scaleValue, 'scale', (v) => `${v}%`);
 bindSlider(offsetXRange, offsetXValue, 'offsetX', (v) => String(v));
 bindSlider(offsetYRange, offsetYValue, 'offsetY', (v) => String(v));
@@ -170,23 +167,16 @@ preview.addEventListener('click', (ev) => {
   }
 });
 
-document.getElementById('export-btn').addEventListener('click', () => {
-  const key = document.getElementById('size-select').value;
-  const size = sizeForKey(key);
+exportBtn.addEventListener('click', () => {
+  const size = sizeForKey(sizeSelect.value);
   exportCoverPNG(state, size.w, size.h);
 });
 
 async function ensureFont() {
   try {
-    if (document.fonts && document.fonts.load) {
-      await document.fonts.load('80px Anton');
-    }
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
-    }
-  } catch {
-    // Font loading is best-effort for screenshots.
-  }
+    await document.fonts.load('80px Anton');
+    await document.fonts.ready;
+  } catch {}
 }
 
 async function runShotMode(shot) {
@@ -198,7 +188,7 @@ async function runShotMode(shot) {
     const canvas = document.getElementById('shotCanvas');
     canvas.width = window.innerWidth || shot.w;
     canvas.height = window.innerHeight || shot.h;
-    const img = await loadSampleImageOnly(shot.photo || 'boulevard');
+    const img = await loadSampleImageOnly(shot.photo);
     const shotState = {
       images: [img, img, img, img],
       transforms: [
@@ -207,35 +197,37 @@ async function runShotMode(shot) {
         { scale: 150, offsetX: -35, offsetY: 15 },
         { scale: 125, offsetX: 15, offsetY: 25 },
       ],
-      layout: shot.layout || 'classic',
-      grade: shot.grade || 'sunset',
-      caption: shot.caption || 'Vice Heat',
+      layout: shot.layout,
+      grade: shot.grade,
+      caption: shot.caption,
       selectedPanel: 0,
+      currentImage: 0,
       showSelection: false,
     };
-    const sctx = canvas.getContext('2d');
-    drawCover(sctx, shotState, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
+    drawCover(ctx, shotState, canvas.width, canvas.height);
     window.__shotReady = true;
-    return;
-  }
-  state.layout = shot.layout || 'classic';
-  state.grade = shot.grade || 'sunset';
-  if (shot.caption) state.caption = shot.caption;
-  layoutSelect.value = state.layout;
-  gradeSelect.value = state.grade;
-  captionInput.value = state.caption;
-  const img = await loadSampleImageOnly(shot.photo || 'pier');
-  if (img) {
-    for (let i = 0; i < 4; i++) state.images[i] = img;
-    state.currentImage = 0;
+  } else {
+    state.layout = shot.layout;
+    state.grade = shot.grade;
+    state.caption = shot.caption;
+    layoutSelect.value = shot.layout;
+    gradeSelect.value = shot.grade;
+    captionInput.value = shot.caption;
+    const photoName = shot.photo || 'pier';
+    const img = await loadSampleImageOnly(photoName);
+    if (img) {
+      for (let i = 0; i < 4; i++) state.images[i] = img;
+      state.currentImage = 0;
+    }
     state.transforms[1] = { scale: 145, offsetX: 25, offsetY: -15 };
     state.transforms[2] = { scale: 160, offsetX: -30, offsetY: 10 };
     state.transforms[3] = { scale: 130, offsetX: 10, offsetY: 20 };
+    buildTabs();
+    syncSliders();
+    redraw();
+    window.__shotReady = true;
   }
-  buildTabs();
-  syncSliders();
-  redraw();
-  window.__shotReady = true;
 }
 
 const shot = parseShotParams(window.location.search);

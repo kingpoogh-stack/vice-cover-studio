@@ -1,10 +1,10 @@
 import { createServer } from 'node:http';
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, normalize } from 'node:path';
+import { readFile, stat } from 'node:fs/promises';
+import { dirname, join, normalize, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = dirname(fileURLToPath(import.meta.url));
-const appDir = join(root, 'app');
+const repoRoot = dirname(fileURLToPath(import.meta.url));
+const appDir = join(repoRoot, 'app');
 const PORT = 8080;
 
 const MIME: Record<string, string> = {
@@ -19,28 +19,29 @@ const MIME: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-function extOf(p: string): string {
-  const i = p.lastIndexOf('.');
-  return i >= 0 ? p.slice(i).toLowerCase() : '';
-}
-
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   try {
-    const url = new URL(req.url || '/', `http://localhost:${PORT}`);
-    let pathname = decodeURIComponent(url.pathname);
-    if (pathname === '/') pathname = '/index.html';
-    const rel = normalize(pathname).replace(/^[/\\]+/, '');
-    const filePath = join(appDir, rel);
-    if (!filePath.startsWith(appDir) || !existsSync(filePath) || !statSync(filePath).isFile()) {
+    let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+    if (urlPath === '/') urlPath = '/index.html';
+    const normalized = normalize(urlPath).replace(/^(\.\.[\/\\])+/, '');
+    const filePath = join(appDir, normalized);
+    if (!filePath.startsWith(appDir)) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('Not found');
       return;
     }
-    const data = readFileSync(filePath);
-    const type = MIME[extOf(filePath)] || 'application/octet-stream';
+    const info = await stat(filePath).catch(() => null);
+    if (!info || !info.isFile()) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Not found');
+      return;
+    }
+    const data = await readFile(filePath);
+    const ext = extname(filePath).toLowerCase();
+    const type = MIME[ext] || 'application/octet-stream';
     res.writeHead(200, {
       'Content-Type': type,
-      'Content-Length': String(data.length),
+      'Content-Length': data.length,
       'Cache-Control': 'no-store',
     });
     res.end(data);
@@ -51,5 +52,5 @@ const server = createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Vice Cover Studio dev server at http://localhost:8080/');
+  console.log(`Vice Cover Studio dev server running at http://localhost:8080/`);
 });

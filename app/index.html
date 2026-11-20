@@ -30,7 +30,7 @@
     <div class="canvas-wrap">
       <canvas id="preview" width="1080" height="1080"></canvas>
     </div>
-    <p class="hint">Tip: click a panel in the preview to select it, then use the crop sliders to frame your photo. Fill several panels with one photo, or give every panel its own shot.</p>
+    <p class="hint">Click a panel in the preview to select it, then use the crop sliders to frame your photo. Fill several panels with one photo or give every panel its own shot.</p>
     <div id="panel-tabs" class="panel-tabs" role="tablist" aria-label="Panels"></div>
   </main>
   <aside class="controls">
@@ -38,13 +38,13 @@
       <h2>Photo</h2>
       <label class="file-label" for="photo-input">Use your own photo</label>
       <input id="photo-input" type="file" accept="image/*">
-      <p class="small">Photos are processed locally in your browser only — nothing is uploaded.</p>
+      <p class="small">Photos are processed locally in the browser only, nothing is uploaded.</p>
       <div class="sample-row">
         <span class="small strong">Or try a built-in scene:</span>
         <div class="sample-buttons">
-          <button class="sample-btn" type="button" data-sample="boulevard">Boulevard</button>
-          <button class="sample-btn" type="button" data-sample="pier">Pier</button>
-          <button class="sample-btn" type="button" data-sample="harbor">Harbor</button>
+          <button type="button" class="sample-btn" data-sample="boulevard">Boulevard</button>
+          <button type="button" class="sample-btn" data-sample="pier">Pier</button>
+          <button type="button" class="sample-btn" data-sample="harbor">Harbor</button>
         </div>
       </div>
       <button id="fill-all" class="wide" type="button">Fill all panels with this photo</button>
@@ -67,7 +67,7 @@
     <section class="control-section">
       <h2>Caption</h2>
       <label class="field-label" for="caption-input">Cover caption</label>
-      <input id="caption-input" type="text" maxlength="28" value="Vice Heat" autocomplete="off">
+      <input id="caption-input" type="text" maxlength="28" value="Vice Heat">
       <p class="small">Bold poster lettering is drawn across the lower third of the cover.</p>
     </section>
     <section class="control-section">

@@ -4,20 +4,21 @@ export const SHOT_SIZES = {
   '1920x1080': { w: 1920, h: 1080 },
 };
 
+function positiveInt(value, fallback) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
 export function parseShotParams(search) {
   const params = new URLSearchParams(search || '');
-  const parsePos = (key, fallback) => {
-    const v = parseInt(params.get(key) || '', 10);
-    return Number.isFinite(v) && v > 0 ? v : fallback;
-  };
   return {
     shot: params.get('shot') || null,
     layout: params.get('layout') || 'classic',
     photo: params.get('photo') || 'boulevard',
     caption: params.get('caption') || 'Vice Heat',
     grade: params.get('grade') || 'sunset',
-    w: parsePos('w', 1280),
-    h: parsePos('h', 720),
+    w: positiveInt(params.get('w'), 1280),
+    h: positiveInt(params.get('h'), 720),
   };
 }
 
